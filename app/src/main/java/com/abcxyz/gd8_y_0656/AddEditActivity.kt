@@ -117,58 +117,79 @@ class AddEditActivity : AppCompatActivity() {
     private fun createMahasiswa(){
         setLoading(true)
 
-        val mahasiswa = Mahasiswa(
-            etNama!!.text.toString(),
-            etNPM!!.text.toString(),
-            edFakultas!!.text.toString(),
-            etProdi!!.text.toString(),
-        )
-
-        val stringRequest: StringRequest = object:
-            StringRequest(Method.POST, MahasiswaApi.ADD_URL,Response.Listener{response->
-                val gson = Gson()
-                val mahasiswa = gson.fromJson(response, Mahasiswa::class.java)
-
-                if(mahasiswa != null)
-                    Toast.makeText(this@AddEditActivity, "Data berhasil +", Toast.LENGTH_SHORT).show()
-
-                val returnIntent = Intent()
-                setResult(RESULT_OK, returnIntent)
-                finish()
-
-                setLoading(false)
-            }, Response.ErrorListener { error->
-                setLoading(false)
-                try{
-                    val responseBody = String(error.networkResponse.data, StandardCharsets.UTF_8)
-                    val errors = JSONObject(responseBody)
-                    Toast.makeText(
-                        this@AddEditActivity,
-                        errors.getString("message"),
-                        Toast.LENGTH_SHORT
-                    ).show()
-                } catch (e:Exception){
-                    Toast.makeText(this@AddEditActivity, e.message, Toast.LENGTH_SHORT).show()
-                }
-            }) {
-            @Throws(AuthFailureError::class)
-            override fun getHeaders(): Map<String, String> {
-                val headers = HashMap<String, String>()
-                headers["Accept"] = "application/json"
-                return headers
-            }
-            @Throws(AuthFailureError::class)
-            override fun getBody(): ByteArray {
-                val gson = Gson()
-                val requestBody = gson.toJson(mahasiswa)
-                return requestBody.toByteArray(StandardCharsets.UTF_8)
-            }
-
-            override fun getBodyContentType(): String {
-                return "application/json"
-            }
+        if(etNama!!.text.toString().isEmpty()){
+            Toast.makeText(this@AddEditActivity, "Nama tdk blh kosong!", Toast.LENGTH_SHORT).show()
         }
-        queue!!.add(stringRequest)
+
+        else if(etNPM!!.text.toString().isEmpty()){
+            Toast.makeText(this@AddEditActivity, "NPM tdk blh kosong!", Toast.LENGTH_SHORT).show()
+        }
+
+        else if(edFakultas!!.text.toString().isEmpty()){
+            Toast.makeText(this@AddEditActivity, "Fakultas tdk blh kosong!", Toast.LENGTH_SHORT).show()
+        }
+
+        else if(etProdi!!.text.toString().isEmpty()){
+            Toast.makeText(this@AddEditActivity, "Prodi tdk blh kosong!", Toast.LENGTH_SHORT).show()
+        }
+        else {
+            val mahasiswa = Mahasiswa(
+                etNama!!.text.toString(),
+                etNPM!!.text.toString(),
+                edFakultas!!.text.toString(),
+                etProdi!!.text.toString(),
+            )
+
+            val stringRequest: StringRequest = object :
+                StringRequest(Method.POST, MahasiswaApi.ADD_URL, Response.Listener { response ->
+                    val gson = Gson()
+                    val mahasiswa = gson.fromJson(response, Mahasiswa::class.java)
+
+                    if (mahasiswa != null)
+                        Toast.makeText(this@AddEditActivity, "Data berhasil +", Toast.LENGTH_SHORT)
+                            .show()
+
+                    val returnIntent = Intent()
+                    setResult(RESULT_OK, returnIntent)
+                    finish()
+
+                    setLoading(false)
+                }, Response.ErrorListener { error ->
+                    setLoading(false)
+                    try {
+                        val responseBody =
+                            String(error.networkResponse.data, StandardCharsets.UTF_8)
+                        val errors = JSONObject(responseBody)
+                        Toast.makeText(
+                            this@AddEditActivity,
+                            errors.getString("message"),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } catch (e: Exception) {
+                        Toast.makeText(this@AddEditActivity, e.message, Toast.LENGTH_SHORT).show()
+                    }
+                }) {
+                @Throws(AuthFailureError::class)
+                override fun getHeaders(): Map<String, String> {
+                    val headers = HashMap<String, String>()
+                    headers["Accept"] = "application/json"
+                    return headers
+                }
+
+                @Throws(AuthFailureError::class)
+                override fun getBody(): ByteArray {
+                    val gson = Gson()
+                    val requestBody = gson.toJson(mahasiswa)
+                    return requestBody.toByteArray(StandardCharsets.UTF_8)
+                }
+
+                override fun getBodyContentType(): String {
+                    return "application/json"
+                }
+            }
+            queue!!.add(stringRequest)
+        }
+        setLoading(false)
     }
 
     private fun updateMahasiswa(id: Long){
